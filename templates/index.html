@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaunchDarkly Targeting Visualization</title>
+    <title>🦕 LaunchDarkly Dino Targeting Visualization</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         body {
@@ -74,14 +74,27 @@
             height: 15px;
             border-radius: 2px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
         
         .square.true {
-            background-color: #27ae60;
+            background-color: transparent;
         }
         
         .square.false {
             background-color: #e74c3c;
+        }
+        
+        .dinosaur-icon {
+            width: 14px;
+            height: 14px;
+            background-image: url('/static/images/dinosaur.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         
         .legend {
@@ -102,6 +115,18 @@
             width: 20px;
             height: 20px;
             border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .legend-dinosaur {
+            width: 18px;
+            height: 18px;
+            background-image: url('/static/images/dinosaur.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         
         .connection-status {
@@ -168,8 +193,8 @@
     <div class="connection-status" id="connectionStatus">Connecting...</div>
     
     <div class="header">
-        <h1>🎯 LaunchDarkly Targeting Visualization</h1>
-        <p>Real-time visualization of feature flag targeting across 2,000 user contexts</p>
+        <h1>🦕 LaunchDarkly Dino Targeting Visualization</h1>
+        <p>Watch cute dinosaurs appear when users are targeted by your feature flag!</p>
         
         <div class="stats">
             <div class="stat">
@@ -188,8 +213,10 @@
         
         <div class="legend">
             <div class="legend-item">
-                <div class="legend-square true"></div>
-                <span>Flag returns <strong>true</strong></span>
+                <div class="legend-square">
+                    <div class="legend-dinosaur"></div>
+                </div>
+                <span>Flag returns <strong>true</strong> 🦕</span>
             </div>
             <div class="legend-item">
                 <div class="legend-square false"></div>
@@ -282,6 +309,14 @@
                 const square = document.createElement('div');
                 square.className = `square ${value ? 'true' : 'false'}`;
                 square.title = `Context ${index + 1}: ${value}`;
+                
+                // Add dinosaur icon for true values
+                if (value) {
+                    const dinosaur = document.createElement('div');
+                    dinosaur.className = 'dinosaur-icon';
+                    square.appendChild(dinosaur);
+                }
+                
                 grid.appendChild(square);
             });
         }
