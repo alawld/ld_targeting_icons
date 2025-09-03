@@ -4,7 +4,7 @@ services:
   ld-targeting-viz:
     build: .
     ports:
-      - "5000:5000"
+      - "8080:5000"
     environment:
       - SDK_KEY=${SDK_KEY}
       - FLAG_KEY=${FLAG_KEY}
@@ -18,7 +18,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    volumes:
+    # volumes:
       # Optional: mount for development
       # - .:/app
     networks:
