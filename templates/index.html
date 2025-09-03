@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaunchDarkly Targeting Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .stat.true {
+            background: #27ae60;
+        }
+        
+        .stat.false {
+            background: #e74c3c;
+        }
+        
+        .visualization-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(50, 1fr);
+            gap: 2px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .square {
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .square.true {
+            background-color: #27ae60;
+        }
+        
+        .square.false {
+            background-color: #e74c3c;
+        }
+        
+        .legend {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-square {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .connected {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .disconnected {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(25, 1fr);
+                max-width: 500px;
+            }
+            
+            .square {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .legend {
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(20, 1fr);
+                max-width: 400px;
+            }
+            
+            .square {
+                width: 10px;
+                height: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">Connecting...</div>
+    
+    <div class="header">
+        <h1>🎯 LaunchDarkly Targeting Visualization</h1>
+        <p>Real-time visualization of feature flag targeting across 2,000 user contexts</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <span>Flag: </span><span id="flagKey">Loading...</span>
+            </div>
+            <div class="stat">
+                <span>Total Contexts: </span><span id="totalContexts">0</span>
+            </div>
+            <div class="stat true">
+                <span>True: </span><span id="trueCount">0</span> (<span id="truePercent">0%</span>)
+            </div>
+            <div class="stat false">
+                <span>False: </span><span id="falseCount">0</span> (<span id="falsePercent">0%</span>)
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-square true"></div>
+                <span>Flag returns <strong>true</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-square false"></div>
+                <span>Flag returns <strong>false</strong></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="visualization-container">
+        <div id="loading" class="loading">Loading visualization...</div>
+        <div id="grid" class="grid" style="display: none;"></div>
+    </div>
+
+    <script>
+        const socket = io();
+        let currentData = [];
+        
+        // DOM elements
+        const connectionStatus = document.getElementById('connectionStatus');
+        const flagKey = document.getElementById('flagKey');
+        const totalContexts = document.getElementById('totalContexts');
+        const trueCount = document.getElementById('trueCount');
+        const falseCount = document.getElementById('falseCount');
+        const truePercent = document.getElementById('truePercent');
+        const falsePercent = document.getElementById('falsePercent');
+        const loading = document.getElementById('loading');
+        const grid = document.getElementById('grid');
+        
+        // Socket event handlers
+        socket.on('connect', function() {
+            connectionStatus.textContent = 'Connected';
+            connectionStatus.className = 'connection-status connected';
+            loadInitialData();
+        });
+        
+        socket.on('disconnect', function() {
+            connectionStatus.textContent = 'Disconnected';
+            connectionStatus.className = 'connection-status disconnected';
+        });
+        
+        socket.on('flag_update', function(data) {
+            updateVisualization(data.data);
+        });
+        
+        // Load initial data
+        function loadInitialData() {
+            fetch('/api/initial-data')
+                .then(response => response.json())
+                .then(data => {
+                    flagKey.textContent = data.flag_key;
+                    totalContexts.textContent = data.total_contexts;
+                    updateVisualization(data.data);
+                    
+                    // Hide loading and show grid
+                    loading.style.display = 'none';
+                    grid.style.display = 'grid';
+                })
+                .catch(error => {
+                    console.error('Error loading initial data:', error);
+                    loading.textContent = 'Error loading data. Please refresh the page.';
+                });
+        }
+        
+        // Update the visualization
+        function updateVisualization(data) {
+            currentData = data;
+            updateStats();
+            renderGrid();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const trueValues = currentData.filter(val => val === true).length;
+            const falseValues = currentData.length - trueValues;
+            const total = currentData.length;
+            
+            trueCount.textContent = trueValues;
+            falseCount.textContent = falseValues;
+            truePercent.textContent = total > 0 ? Math.round((trueValues / total) * 100) + '%' : '0%';
+            falsePercent.textContent = total > 0 ? Math.round((falseValues / total) * 100) + '%' : '0%';
+        }
+        
+        // Render the grid
+        function renderGrid() {
+            // Clear existing grid
+            grid.innerHTML = '';
+            
+            // Create squares
+            currentData.forEach((value, index) => {
+                const square = document.createElement('div');
+                square.className = `square ${value ? 'true' : 'false'}`;
+                square.title = `Context ${index + 1}: ${value}`;
+                grid.appendChild(square);
+            });
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connection will be established automatically
+        });
+    </script>
+</body>
+</html>
+

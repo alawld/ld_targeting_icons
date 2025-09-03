@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  ld-targeting-viz:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - SDK_KEY=${SDK_KEY}
+      - FLAG_KEY=${FLAG_KEY}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      # Optional: mount for development
+      # - .:/app
+    networks:
+      - ld-viz-network
+
+networks:
+  ld-viz-network:
+    driver: bridge
+
