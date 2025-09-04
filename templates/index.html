@@ -72,29 +72,24 @@
         .square {
             width: 15px;
             height: 15px;
-            border-radius: 2px;
+            border-radius: 1px;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
+            background-image: url('/static/images/dinosaur-large.svg');
+            background-size: 750px 600px; /* 50 * 15px = 750px, 40 * 15px = 600px */
+            background-repeat: no-repeat;
         }
         
         .square.true {
-            background-color: transparent;
+            /* Show the dinosaur piece */
+            opacity: 1;
         }
         
         .square.false {
+            /* Hide the dinosaur piece, show red background */
+            background-image: none;
             background-color: #e74c3c;
-        }
-        
-        .dinosaur-icon {
-            width: 14px;
-            height: 14px;
-            background-image: url('/static/images/dinosaur.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            opacity: 1;
         }
         
         .legend {
@@ -194,7 +189,7 @@
     
     <div class="header">
         <h1>🦕 LaunchDarkly Dino Targeting Visualization</h1>
-        <p>Watch cute dinosaurs appear when users are targeted by your feature flag!</p>
+        <p>Watch a cute dinosaur image reveal itself as users are targeted by your feature flag!</p>
         
         <div class="stats">
             <div class="stat">
@@ -216,11 +211,11 @@
                 <div class="legend-square">
                     <div class="legend-dinosaur"></div>
                 </div>
-                <span>Flag returns <strong>true</strong> 🦕</span>
+                <span>Flag returns <strong>true</strong> - reveals dinosaur piece</span>
             </div>
             <div class="legend-item">
                 <div class="legend-square false"></div>
-                <span>Flag returns <strong>false</strong></span>
+                <span>Flag returns <strong>false</strong> - hides dinosaur piece</span>
             </div>
         </div>
     </div>
@@ -304,17 +299,27 @@
             // Clear existing grid
             grid.innerHTML = '';
             
+            const gridCols = 50;
+            const gridRows = 40;
+            const squareSize = 15; // pixels
+            
             // Create squares
             currentData.forEach((value, index) => {
                 const square = document.createElement('div');
                 square.className = `square ${value ? 'true' : 'false'}`;
                 square.title = `Context ${index + 1}: ${value}`;
                 
-                // Add dinosaur icon for true values
+                // Calculate grid position
+                const col = index % gridCols;
+                const row = Math.floor(index / gridCols);
+                
+                // Calculate background position for this piece of the image
+                const bgX = -(col * squareSize);
+                const bgY = -(row * squareSize);
+                
+                // Set background position for true values
                 if (value) {
-                    const dinosaur = document.createElement('div');
-                    dinosaur.className = 'dinosaur-icon';
-                    square.appendChild(dinosaur);
+                    square.style.backgroundPosition = `${bgX}px ${bgY}px`;
                 }
                 
                 grid.appendChild(square);
