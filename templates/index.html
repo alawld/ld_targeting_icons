@@ -49,7 +49,7 @@
         }
         
         .stat.false {
-            background: #e74c3c;
+            background: #95a5a6;
         }
         
         .visualization-container {
@@ -86,9 +86,9 @@
         }
         
         .square.false {
-            /* Hide the dinosaur piece, show red background */
+            /* Hide the dinosaur piece, show white background */
             background-image: none;
-            background-color: #e74c3c;
+            background-color: #ffffff;
             opacity: 1;
         }
         
@@ -202,7 +202,7 @@
                 <span>True: </span><span id="trueCount">0</span> (<span id="truePercent">0%</span>)
             </div>
             <div class="stat false">
-                <span>False: </span><span id="falseCount">0</span> (<span id="falsePercent">0%</span>)
+                <span>Hidden: </span><span id="falseCount">0</span> (<span id="falsePercent">0%</span>)
             </div>
         </div>
         
@@ -214,7 +214,7 @@
                 <span>Flag returns <strong>true</strong> - reveals dinosaur piece</span>
             </div>
             <div class="legend-item">
-                <div class="legend-square false"></div>
+                <div class="legend-square" style="background-color: #ffffff; border: 1px solid #ddd;"></div>
                 <span>Flag returns <strong>false</strong> - hides dinosaur piece</span>
             </div>
         </div>
