@@ -75,18 +75,18 @@
             border-radius: 1px;
             transition: all 0.3s ease;
             position: relative;
-            background-image: url('/static/images/original-dinosaur.png');
+            background-image: url('/static/images/reveal-image.png');
             background-size: 600px 750px; /* Scale image to fit 40x50 grid of 15px squares */
             background-repeat: no-repeat;
         }
         
         .square.true {
-            /* Show the dinosaur piece */
+            /* Show the image piece */
             opacity: 1;
         }
         
         .square.false {
-            /* Hide the dinosaur piece, show white background */
+            /* Hide the image piece, show white background */
             background-image: none;
             background-color: #ffffff;
             opacity: 1;
@@ -115,10 +115,10 @@
             justify-content: center;
         }
         
-        .legend-dinosaur {
+        .legend-image {
             width: 18px;
             height: 18px;
-            background-image: url('/static/images/dinosaur.svg');
+            background-image: url('/static/images/reveal-image.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -189,7 +189,7 @@
     
     <div class="header">
         <h1>🦕 LaunchDarkly Dino Targeting Visualization</h1>
-        <p>Watch your custom dinosaur image reveal itself as users are targeted by your feature flag!</p>
+        <p>Watch your custom image reveal itself as users are targeted by your feature flag!</p>
         
         <div class="stats">
             <div class="stat">
@@ -209,13 +209,13 @@
         <div class="legend">
             <div class="legend-item">
                 <div class="legend-square">
-                    <div class="legend-dinosaur"></div>
+                    <div class="legend-image"></div>
                 </div>
-                <span>Flag returns <strong>true</strong> - reveals dinosaur piece</span>
+                <span>Flag returns <strong>true</strong> - reveals image piece</span>
             </div>
             <div class="legend-item">
                 <div class="legend-square" style="background-color: #ffffff; border: 1px solid #ddd;"></div>
-                <span>Flag returns <strong>false</strong> - hides dinosaur piece</span>
+                <span>Flag returns <strong>false</strong> - hides image piece</span>
             </div>
         </div>
     </div>
